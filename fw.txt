@@ -1,13 +1,15 @@
-Chain INPUT (policy DROP)
-target     prot opt source               destination
-ACCEPT     icmp --  anywhere             anywhere             icmp echo-request limit: avg 1/sec burst 5
-DROP       icmp --  anywhere             anywhere             icmp echo-request
-Status: active
-
-To                         Action      From
---                         ------      ----
-22/tcp                     ALLOW       Anywhere
-53                         DENY        Anywhere
-22/tcp (v6)                ALLOW       Anywhere (v6)
-53 (v6)                    DENY        Anywhere (v6)
-
+sudo apt-get install apache2 -y
+sudo apt-get install proftpd -y
+sudo apt-get install bind9 -y
+sudo nano /etc/bind/named.conf.options
+# Zet 'allow-transfer {"none";}; achteraan
+sudo iptables -t filter -A INPUT -i eth0 -p icmp --icmp-type echo-request -m limit 1/second -j accept
+sudo iptables -t filter -A INPUT -i eth0 -p icmp --icmp-type echo-request -j DROP
+sudo iptables -t filter -A OUTPUT -m state --state RELATED,ESTABLISHED -j ACCEPT
+sudo iptables -t filter -A INPUT -p tcp -m tcp --dport 80 -j ACCEPT
+sudo iptables -t filter -A OUTPUT -p tcp -m tcp --dport 80 -j ACCEPT
+sudo iptables -t filter -A INPUT -p tcp -m tcp --dport 21 -j ACCEPT
+sudo iptables -t filter -A OUTPUT -p tcp -m tcp --dport 21 -j ACCEPT
+sudo iptables -t filter -A INPUT -p udp --dport 53 -j ACCEPT
+sudo iptables -t filter -A OUTPUT -p udp --dport 53 -j ACCEPT
+sudo iptables -A OUTPUT -j DROP
